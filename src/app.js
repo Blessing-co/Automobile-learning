@@ -1,4 +1,5 @@
 import { parts, systems } from './data.js';
+import { mountVehicleViewer } from './vehicle3d.js';
 
 
 let state=JSON.parse(localStorage.getItem('autolab-state')||'{"explored":[],"lessons":[],"best":0}');
@@ -13,24 +14,8 @@ function partById(id){return parts.find(p=>p.id===id)}
 function selectPart(id){selectedPart=id;let p=partById(id);if(!p)return;if(!state.explored.includes(id)){state.explored.push(id);save()}renderPartDetail();renderPartList();renderDrawing()}
 function renderPartDetail(){let p=partById(selectedPart);document.getElementById('partDetail').innerHTML='<div class="eyebrow">COMPONENT PROFILE</div><h2>'+p.name+'</h2><span class="tag">'+p.local+'</span><span class="tag">'+(p.zone==='bay'?'Engine bay':'Undercarriage')+'</span><div class="detailgrid">'+[['FUNCTION',p.function],['LOCATION',p.location],['HOW IT GETS DAMAGED',p.damage],['SYMPTOMS WHEN FAULTY',p.symptoms],['WORKSHOP CHECK',p.check]].map(([a,b])=>'<div class="detailitem"><b>'+a+'</b><span>'+b+'</span></div>').join('')+'</div><div class="row" style="margin-top:15px"><button class="btn secondary" onclick="completeLesson(\'part-'+p.id+'\')">Mark studied</button><span class="small muted">Study record saved on this device</span></div>'}
 function renderPartList(){let q=(document.getElementById('partSearch').value||'').toLowerCase();let list=parts.filter(p=>p.zone===activeZone||activeZone==='body').filter(p=>(p.name+' '+p.local).toLowerCase().includes(q));document.getElementById('partList').innerHTML=list.map(p=>'<button class="partrow '+(p.id===selectedPart?'selected':'')+'" onclick="selectPart(\''+p.id+'\')"><span><b>'+p.name+'</b><small>'+p.local+'</small></span><span class="small muted">Open →</span></button>').join('')||'<p class="muted">No components match this search.</p>'}
-function renderDrawing(){let svg='';if(activeZone==='bay'){svg='<svg viewBox="0 0 520 350" role="img" aria-label="Simplified top view of engine bay"><rect x="55" y="25" width="410" height="300" rx="34" fill="#9eafc2" stroke="#71859c" stroke-width="4"/><rect x="88" y="48" width="344" height="260" rx="25" fill="#cbd7e4" stroke="#8ea1b5" stroke-width="3"/><rect x="170" y="95" width="180" height="150" rx="20" fill="#65788d" stroke="#41576e" stroke-width="4"/><rect x="194" y="119" width="132" height="100" rx="12" fill="#33475d"/><rect x="105" y="70" width="70" height="55" rx="9" fill="#e4b85f"/><rect x="355" y="65" width="58" height="70" rx="8" fill="#5c7f9c"/><rect x="365" y="225" width="50" height="50" rx="7" fill="#d8e0e8"/><rect x="105" y="245" width="70" height="40" rx="7" fill="#a9bacb"/><path d="M85 150h65m220 20h70M260 45v40" stroke="#8398ae" stroke-width="8" stroke-linecap="round"/>'+[['battery',137,96,'B'],['alternator',352,190,'A'],['airfilter',390,98,'F'],['radiator',260,290,'R'],['oilcap',260,145,'O'],['brakefluid',140,55,'H'],['fusebox',390,250,'E']].map(([id,x,y,t])=>'<g class="hotspot '+(id===selectedPart?'selected':'')+'" onclick="selectPart(\''+id+'\')"><circle cx="'+x+'" cy="'+y+'" r="16"/><text x="'+x+'" y="'+y+'">'+t+'</text></g>').join('')+'</svg>'}
-else if(activeZone==='under'){svg='<svg viewBox="0 0 520 350" role="img" aria-label="Simplified underside vehicle diagram"><rect x="135" y="18" width="250" height="314" rx="72" fill="#b9c8d7" stroke="#75899e" stroke-width="4"/><rect x="180" y="65" width="160" height="220" rx="45" fill="#71869b"/><rect x="198" y="110" width="124" height="120" rx="20" fill="#52677d"/><path d="M100 92h320M100 258h320M260 22v305" stroke="#52677d" stroke-width="9" stroke-linecap="round"/>'+[['starter',260,105,'S'],['brakecaliper',140,90,'B'],['shock',380,90,'D'],['controlarm',145,250,'A'],['driveshaft',260,175,'C'],['exhaust',260,280,'X'],['fuelpump',365,245,'F']].map(([id,x,y,t])=>'<g class="hotspot '+(id===selectedPart?'selected':'')+'" onclick="selectPart(\''+id+'\')"><circle cx="'+x+'" cy="'+y+'" r="16"/><text x="'+x+'" y="'+y+'">'+t+'</text></g>').join('')+'</svg>'}
-else{svg='<svg viewBox="0 0 520 300" aria-label="Side profile schematic"><path d="M70 195l25-55q15-30 55-35l70-10 50-45q25-20 80-10l60 50q35 10 50 40l15 65H70z" fill="#7e9bb7" stroke="#48637e" stroke-width="5"/><circle cx="160" cy="205" r="38" fill="#27384b" stroke="#e5edf5" stroke-width="9"/><circle cx="390" cy="205" r="38" fill="#27384b" stroke="#e5edf5" stroke-width="9"/><path d="M235 65l-15 65h115l-20-70" fill="#c8d9e8" stroke="#48637e" stroke-width="3"/></svg>'}
-const host=document.getElementById('vehicleDrawing');
-host.innerHTML='<div class="viewerbar"><button type="button" onclick="turnModel(-18)">↶ Rotate</button><button type="button" onclick="turnModel(18)">Rotate ↷</button><button type="button" onclick="changeZoom(0.1)">＋ Zoom</button><button type="button" onclick="changeZoom(-0.1)">－ Zoom</button><button type="button" onclick="resetModel()">Reset view</button></div><div class="modelstage" id="modelStage"><div id="modelSurface">'+svg+'</div></div><div class="modelhint">Drag the model to rotate • Pinch/scroll not supported; use zoom controls</div>';
-const surface=document.getElementById('modelSurface');
-surface.style.transform='rotateX(0deg) rotateY(0deg) scale(0.96)';
-surface.style.transformStyle='preserve-3d';
-surface.style.transition='transform .12s ease-out';
-let dragging=false,lastX=0,lastY=0,rx=0,rz=0,scale=0.96;
-const stage=document.getElementById('modelStage');
-stage.onpointerdown=e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;stage.classList.add('dragging');stage.setPointerCapture(e.pointerId)};
-stage.onpointermove=e=>{if(!dragging)return;rz=Math.max(-55,Math.min(55,rz+(e.clientX-lastX)*0.55));rx=Math.max(-22,Math.min(22,rx-(e.clientY-lastY)*0.35));lastX=e.clientX;lastY=e.clientY;surface.style.transform='rotateX('+rx+'deg) rotateY('+rz+'deg) scale('+scale+')'};
-stage.onpointerup=stage.onpointercancel=()=>{dragging=false;stage.classList.remove('dragging')};
-window.turnModel=delta=>{rz+=delta;surface.style.transform='rotateX('+rx+'deg) rotateZ('+rz+'deg) scale('+scale+')'};
-window.changeZoom=delta=>{scale=Math.max(0.55,Math.min(1.25,scale+delta));surface.style.transform='rotateX('+rx+'deg) rotateZ('+rz+'deg) scale('+scale+')'};
-window.resetModel=()=>{rx=0;rz=0;scale=0.96;surface.style.transform='rotateX('+rx+'deg) rotateZ('+rz+'deg) scale('+scale+')'};
-}
+function renderDrawing(){mountVehicleViewer(activeZone,selectedPart,selectPart)}
+
 document.querySelectorAll('[data-zone]').forEach(b=>b.addEventListener('click',()=>{activeZone=b.dataset.zone;document.querySelectorAll('[data-zone]').forEach(x=>x.classList.toggle('active',x===b));let first=parts.find(p=>p.zone===activeZone);if(first)selectedPart=first.id;renderPartList();renderPartDetail();renderDrawing()}));
 document.getElementById('partSearch').addEventListener('input',renderPartList);
 function renderSystems(){document.getElementById('systemsLibrary').innerHTML=systems.map(s=>'<button class="card partrow" style="text-align:left;display:block" onclick="showSystem(\''+s.id+'\')"><div class="course"><div class="courseicon">'+s.icon+'</div><div><h3>'+s.name+'</h3><div class="muted small">'+s.desc+'</div></div></div></button>').join('')}
@@ -52,4 +37,4 @@ renderPartDetail();renderPartList();renderDrawing();renderSystems();renderQuiz()
 if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('/sw.js').catch(()=>{});
 
 // Expose handlers used by the existing accessible HTML controls.
-Object.assign(window, { showView, completeLesson, selectPart, turnModel, changeZoom, resetModel, showSystem, openCase, caseAnswer, answerQuiz, submitQuiz, restartQuiz, resetProgress });
+Object.assign(window, { showView, completeLesson, selectPart, showSystem, openCase, caseAnswer, answerQuiz, submitQuiz, restartQuiz, resetProgress });
