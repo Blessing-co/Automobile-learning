@@ -73,7 +73,7 @@ const hotspotSets = {
 };
 export function mountVehicleViewer(zone, selectedId, onSelect) {
   const host=document.getElementById('vehicleDrawing'); if(!host)return;
-  if(current){current.controls.dispose();current.renderer.dispose();current.observer.disconnect();current=null;}
+  if(current){current.dispose();current=null;}
   host.innerHTML='<div class="viewerbar"><button data-cmd="reset">Reset view</button><button data-cmd="engine">Engine detail</button><button data-cmd="transparent">Show structure</button></div><div class="three-stage" id="threeStage"><canvas id="vehicleCanvas" aria-label="Interactive three dimensional vehicle learning model"></canvas><div class="three-label" id="threeLabel">Drag to orbit · Pinch or scroll to zoom · Tap a marker to study a part</div></div><div class="model-legend">Learning model · component locations are illustrative and variant-dependent</div>';
   const canvas=host.querySelector('canvas'),stage=host.querySelector('#threeStage');
   const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'low-power'});
