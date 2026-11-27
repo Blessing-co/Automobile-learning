@@ -69,7 +69,7 @@ function makeUnderbody(root) {
 const hotspotSets = {
   bay:[['battery',[-.72,1.28,.85]],['alternator',[-.55,.85,1.48]],['airfilter',[.72,1.2,.5]],['radiator',[0,.9,2]],['oilcap',[.22,1.52,1.16]],['brakefluid',[-.8,1.55,1.7]],['fusebox',[.78,1.2,1.45]]],
   under:[['starter',[.18,.7,.2]],['brakecaliper',[.98,.62,1.35]],['shock',[.98,1,1.35]],['controlarm',[-.65,.5,1]],['driveshaft',[0,.55,.3]],['exhaust',[.35,.52,-.1]],['fuelpump',[-.48,.6,-.9]]],
-  body:[['battery',[-.72,1.2,.85]],['radiator',[0,.8,2]],['brakecaliper',[.98,.62,1.35]],['exhaust',[.35,.52,-.1]]]
+  body:[['battery',[-1.02,1.72,.82]],['radiator',[0,1.48,2.35]],['brakecaliper',[1.28,.72,1.35]],['exhaust',[.82,.48,-2.22]]]
 };
 export function mountVehicleViewer(zone, selectedId, onSelect) {
   const host=document.getElementById('vehicleDrawing'); if(!host)return;
