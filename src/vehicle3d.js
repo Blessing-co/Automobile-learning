@@ -86,16 +86,16 @@ export function mountVehicleViewer(zone, selectedId, onSelect) {
   const key=new THREE.DirectionalLight(0xffffff,2.2); key.position.set(4,8,5); key.castShadow=true; scene.add(key);
   const fill=new THREE.DirectionalLight(0xc6e0ff,1.1); fill.position.set(-5,3,-4); scene.add(fill);
   const floor=new THREE.Mesh(new THREE.CircleGeometry(5.5,48),new THREE.MeshStandardMaterial({color:0xd4e0eb,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=.02;floor.receiveShadow=true;scene.add(floor);
-  const car=new THREE.Group();scene.add(car); makeExterior(car,zone==='bay'||zone==='under');
+  const car=new THREE.Group();scene.add(car); const shell=makeExterior(car,zone==='bay'||zone==='under');
   if(zone==='bay')makeEngine(car); if(zone==='under')makeUnderbody(car);
   if(zone==='bay'){const hood=box(car,'open bonnet',[1.95,.12,1.05],[0,2.2,1.55],colors.body);hood.rotation.x=-.55;}
-  if(zone==='under'){car.rotation.x=Math.PI;car.position.y=2.65;}
+  if(zone==='under'){shell.visible=false;const floorPart=car.children.find(o=>o.name==='chassis floor');if(floorPart)floorPart.visible=false;}
   if(zone==='body'){car.children.forEach(o=>{if(o.name==='chassis floor')o.visible=false;});}
   const markers=new THREE.Group();scene.add(markers);
   const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2(); let markerMeshes=[];
   for(const [id,pos] of (hotspotSets[zone]||[])){
-    const part=markers.add(new THREE.Mesh(new THREE.SphereGeometry(id===selectedId?.115:.085,16,12),new THREE.MeshStandardMaterial({color:id===selectedId?0xffae32:0x1769e0,emissive:id===selectedId?0x6b3700:0x052a64,roughness:.35})));
-    part.position.set(...pos);part.userData.partId=id;markerMeshes.push(part);
+    const part=new THREE.Mesh(new THREE.SphereGeometry(id===selectedId ? .115 : .085,16,12),new THREE.MeshStandardMaterial({color:id===selectedId?0xffae32:0x1769e0,emissive:id===selectedId?0x6b3700:0x052a64,roughness:.35}));
+    markers.add(part);part.position.set(...pos);part.userData.partId=id;markerMeshes.push(part);
   }
   const label=host.querySelector('#threeLabel');
   const resize=()=>{const w=Math.max(240,stage.clientWidth),h=Math.max(210,stage.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};
@@ -105,7 +105,7 @@ export function mountVehicleViewer(zone, selectedId, onSelect) {
   host.querySelectorAll('[data-cmd]').forEach(b=>b.addEventListener('click',()=>{
     if(b.dataset.cmd==='reset'){camera.position.set(5.7,4.1,6.6);controls.target.set(0,.95,0);controls.update();}
     if(b.dataset.cmd==='engine'){if(zone!=='bay')return;car.children.forEach(o=>{if(['open bonnet'].includes(o.name))o.visible=true;});camera.position.set(3.5,3.4,4.6);controls.target.set(0,1.1,1.25);controls.update();}
-    if(b.dataset.cmd==='transparent'){const body=car.children.find(o=>o.children.some(c=>c.name==='roof'));if(body){body.traverse(o=>{if(o.material&&o.material.transparent!==undefined&&o.geometry?.type==='BoxGeometry'&&o.name!=='tyre')o.material.transparent=true;});}}
+    if(b.dataset.cmd==='transparent'){shell.traverse(o=>{if(o.material){o.material.transparent=true;o.material.opacity=.16;}});}
   }));
   let raf=0,alive=true;function animate(){if(!alive)return;raf=requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);}animate();
   current={controls,renderer,observer,dispose:()=>{alive=false;cancelAnimationFrame(raf);canvas.removeEventListener('click',onPointer);}};
