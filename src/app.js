@@ -50,3 +50,6 @@ function resetProgress(){if(confirm('Clear all learning progress stored on this 
 document.getElementById('systemCards').innerHTML=systems.slice(0,4).map(s=>'<div class="card course"><div class="courseicon">'+s.icon+'</div><div><h3>'+s.name+'</h3><p class="muted small">'+s.desc+'</p><button class="btn secondary" onclick="showView(\'systems\');showSystem(\''+s.id+'\')">Study system</button></div></div>').join('');
 renderPartDetail();renderPartList();renderDrawing();renderSystems();renderQuiz();updateStats();
 if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('/sw.js').catch(()=>{});
+
+// Expose handlers used by the existing accessible HTML controls.
+Object.assign(window, { showView, completeLesson, selectPart, turnModel, changeZoom, resetModel, showSystem, openCase, caseAnswer, answerQuiz, submitQuiz, restartQuiz, resetProgress });
