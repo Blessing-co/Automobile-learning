@@ -22,6 +22,71 @@
 
 @media(max-width:900px){.shell{grid-template-columns:1fr}.sidebar{position:fixed;z-index:20;left:-270px;width:250px;transition:.25s;box-shadow:0 0 0 999px #0a152355}.sidebar.open{left:0}.mobilemenu{display:inline-flex}.topbar{padding:0 16px}.content{padding:18px}.hero{grid-template-columns:1fr .4fr;padding:22px}.stats{grid-template-columns:repeat(2,1fr)}.grid2,.partlayout{grid-template-columns:1fr}.grid3{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.hero{grid-template-columns:1fr}.heroart{display:none}.stats{gap:9px}.stat{padding:12px}.stat strong{font-size:21px}.grid3{grid-template-columns:1fr}.content{padding:14px}.topbar{height:60px}.detailgrid{grid-template-columns:1fr}.vehiclebox{min-height:260px}.sectionhead{align-items:start;flex-direction:column}.search{width:100%}}
+
+/* Mobile-first layout corrections */
+html{width:100%;overflow-x:hidden;scrollbar-gutter:stable}
+body{width:100%;min-width:0;overflow-x:hidden}
+.shell,.main,.content,.view,.card,.partlayout,.grid2,.grid3{min-width:0;max-width:100%}
+img,svg,video,canvas{max-width:100%}
+button,select,input{max-width:100%}
+.content{width:100%;overflow-x:clip}
+.topbar{min-width:0;gap:8px}
+.topbar .topright{min-width:0;justify-content:flex-end;flex-wrap:wrap}
+.partlayout>*{min-width:0}
+.vehiclebox{width:100%;min-width:0;padding:clamp(8px,2vw,16px)}
+.vehiclebox #modelStage{width:100%;min-width:0;overflow:hidden}
+#modelSurface{width:100%;min-width:0;display:grid;place-items:center;transform-origin:center}
+#modelSurface svg{display:block;width:min(100%,520px);height:auto;max-height:330px}
+.viewerbar{gap:6px}
+.viewerbar button{min-height:38px}
+.modelhint{padding:0 6px}
+.listparts{min-width:0}
+.partrow{min-width:0;overflow-wrap:anywhere}
+.detailitem{min-width:0;overflow-wrap:anywhere}
+@media(max-width:900px){
+ .shell{display:block}
+ .sidebar{width:min(280px,84vw);left:calc(-1 * min(290px,90vw));height:100dvh;overflow-y:auto}
+ .sidebar.open{left:0}
+ .main{width:100%}
+ .content{padding:clamp(12px,3vw,20px)}
+ .topbar{padding-inline:clamp(10px,3vw,18px)}
+ .hero{grid-template-columns:minmax(0,1fr) minmax(90px,.35fr)}
+ .partlayout{grid-template-columns:minmax(0,1fr)}
+ .vehiclebox{min-height:0}
+}
+@media(max-width:600px){
+ body{font-size:14px}
+ .topbar{height:auto;min-height:58px;padding-block:9px}
+ .topbar .topright{gap:5px}
+ .topbar .pill{font-size:10px;padding:5px 7px}
+ .topbar #streak{display:none}
+ .content{padding:12px}
+ .hero{display:block;padding:20px;border-radius:14px}
+ .heroart{display:none}
+ .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .stat{min-width:0;padding:11px}
+ .stat strong{font-size:20px}
+ .grid2,.grid3,.partlayout{grid-template-columns:minmax(0,1fr)}
+ .sectionhead{flex-direction:column;align-items:stretch}
+ .search,.field{width:100%;min-width:0}
+ .tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:5px}
+ .tab{flex:0 0 auto}
+ .vehiclebox{padding:8px;gap:7px}
+ .modelstage{min-height:190px}
+ #modelSurface svg{max-height:210px}
+ .viewerbar button{font-size:11px;padding:6px 7px;min-height:36px}
+ .detailgrid{grid-template-columns:minmax(0,1fr)}
+ .partrow{padding:10px}
+ .card{padding:13px}
+}
+@media(max-width:360px){
+ .content{padding:9px}
+ .hero h1{font-size:25px}
+ .stats{gap:6px}
+ .viewerbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+ .viewerbar button{width:100%}
+}
+
 </style>
 </head>
 <body>
@@ -102,17 +167,17 @@ else{svg='<svg viewBox="0 0 520 300" aria-label="Side profile schematic"><path d
 const host=document.getElementById('vehicleDrawing');
 host.innerHTML='<div class="viewerbar"><button type="button" onclick="turnModel(-18)">↶ Rotate</button><button type="button" onclick="turnModel(18)">Rotate ↷</button><button type="button" onclick="changeZoom(0.1)">＋ Zoom</button><button type="button" onclick="changeZoom(-0.1)">－ Zoom</button><button type="button" onclick="resetModel()">Reset view</button></div><div class="modelstage" id="modelStage"><div id="modelSurface">'+svg+'</div></div><div class="modelhint">Drag the model to rotate • Pinch/scroll not supported; use zoom controls</div>';
 const surface=document.getElementById('modelSurface');
-surface.style.transform='rotateX(48deg) rotateZ(-24deg) scale(0.88)';
+surface.style.transform='rotateX(0deg) rotateY(0deg) scale(0.96)';
 surface.style.transformStyle='preserve-3d';
 surface.style.transition='transform .12s ease-out';
-let dragging=false,lastX=0,lastY=0,rx=48,rz=-24,scale=0.88;
+let dragging=false,lastX=0,lastY=0,rx=0,rz=0,scale=0.96;
 const stage=document.getElementById('modelStage');
 stage.onpointerdown=e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;stage.classList.add('dragging');stage.setPointerCapture(e.pointerId)};
-stage.onpointermove=e=>{if(!dragging)return;rz+=(e.clientX-lastX)*0.55;rx=Math.max(12,Math.min(78,rx-(e.clientY-lastY)*0.45));lastX=e.clientX;lastY=e.clientY;surface.style.transform='rotateX('+rx+'deg) rotateZ('+rz+'deg) scale('+scale+')'};
+stage.onpointermove=e=>{if(!dragging)return;rz=Math.max(-55,Math.min(55,rz+(e.clientX-lastX)*0.55));rx=Math.max(-22,Math.min(22,rx-(e.clientY-lastY)*0.35));lastX=e.clientX;lastY=e.clientY;surface.style.transform='rotateX('+rx+'deg) rotateY('+rz+'deg) scale('+scale+')'};
 stage.onpointerup=stage.onpointercancel=()=>{dragging=false;stage.classList.remove('dragging')};
 window.turnModel=delta=>{rz+=delta;surface.style.transform='rotateX('+rx+'deg) rotateZ('+rz+'deg) scale('+scale+')'};
 window.changeZoom=delta=>{scale=Math.max(0.55,Math.min(1.25,scale+delta));surface.style.transform='rotateX('+rx+'deg) rotateZ('+rz+'deg) scale('+scale+')'};
-window.resetModel=()=>{rx=48;rz=-24;scale=0.88;surface.style.transform='rotateX('+rx+'deg) rotateZ('+rz+'deg) scale('+scale+')'};
+window.resetModel=()=>{rx=0;rz=0;scale=0.96;surface.style.transform='rotateX('+rx+'deg) rotateZ('+rz+'deg) scale('+scale+')'};
 }
 document.querySelectorAll('[data-zone]').forEach(b=>b.addEventListener('click',()=>{activeZone=b.dataset.zone;document.querySelectorAll('[data-zone]').forEach(x=>x.classList.toggle('active',x===b));let first=parts.find(p=>p.zone===activeZone);if(first)selectedPart=first.id;renderPartList();renderPartDetail();renderDrawing()}));
 document.getElementById('partSearch').addEventListener('input',renderPartList);
