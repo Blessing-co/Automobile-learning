@@ -74,6 +74,15 @@ const hotspotSets = {
 export function mountVehicleViewer(zone, selectedId, onSelect) {
   const host=document.getElementById('vehicleDrawing'); if(!host)return;
   if(current){current.dispose();current=null;}
+  // Use the actual Kia Sportage QL 2015–2021 model for the exterior overview.
+  // The engine-bay and underbody scenes below remain instructional schematics.
+  if(zone==='body'){
+    host.innerHTML = '<div class="viewerbar"><span class="viewer-status">Actual Kia Sportage QL · 2015–2021</span><a href="https://sketchfab.com/3d-models/kia-sportage-gt-line-ql-2015-2021-89cc320440ef47c289c8b4f04ffee008" target="_blank" rel="noopener noreferrer">Open model source ↗</a></div><div class="three-stage" style="height: min(68vh,620px);min-height:340px;padding:0;overflow:hidden"><iframe title="Interactive Kia Sportage GT-Line QL 2015–2021 3D model by Merc_TV" src="https://sketchfab.com/models/89cc320440ef47c289c8b4f04ffee008/embed?autostart=0&ui_theme=dark" allow="autoplay; fullscreen; xr-spatial-tracking" allowfullscreen loading="lazy" style="display:block;width:100%;height:100%;border:0"></iframe></div><div class="model-legend">Real Sportage QL exterior model hosted by Sketchfab. Drag to rotate, scroll or pinch to zoom. This is an exterior model; it does not expose the engine, chassis or internal components.</div>';
+    return {dispose:()=>{host.innerHTML='';}};
+  }
+
+  const host=document.getElementById('vehicleDrawing'); if(!host)return;
+  if(current){current.dispose();current=null;}
   host.innerHTML='<div class="viewerbar"><button data-cmd="reset">Reset view</button><button data-cmd="engine">Engine detail</button><button data-cmd="transparent">Show structure</button></div><div class="three-stage" id="threeStage"><canvas id="vehicleCanvas" aria-label="Interactive three dimensional vehicle learning model"></canvas><div class="three-label" id="threeLabel">Drag to orbit · Pinch or scroll to zoom · Tap a marker to study a part</div></div><div class="model-legend">Learning model · component locations are illustrative and variant-dependent</div>';
   const canvas=host.querySelector('canvas'),stage=host.querySelector('#threeStage');
   const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'low-power'});
