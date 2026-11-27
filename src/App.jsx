@@ -1,6 +1,6 @@
 import React, { Suspense, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Environment, Html, OrbitControls, ContactShadows } from '@react-three/drei';
+import { Environment, Html, OrbitControls, ContactShadows, useGLTF } from '@react-three/drei';
 import { parts, systems } from './data.js';
 
 const nav = [
@@ -26,26 +26,45 @@ function PartMesh({name,position,scale=[1,1,1],color='#64748b',shape='box',onCli
   <meshStandardMaterial color={color} roughness={.48} metalness={.2}/>
  </mesh>;
 }
-function LearningScene({zone,onPick}) {
- const engine=zone==='bay';
- return <Canvas camera={{position:[5,3.2,6],fov:42}} dpr={[1,1.5]} shadows>
-  <color attach="background" args={['#eaf0f7']}/><ambientLight intensity={1.5}/><directionalLight position={[5,8,5]} intensity={2.2} castShadow/>
-  <group position={[0,-.5,0]}>
-   <PartMesh position={[0,.45,0]} scale={[1.65,.18,3.5]} color="#334155"/>
-   {[-1,1].map(x=>[-1.25,1.25].map(z=><group key={x+'-'+z} position={[x,.1,z]}><PartMesh shape="cylinder" scale={[.43,.25,.43]} color="#17212d"/><PartMesh shape="cylinder" position={[0,0,.13]} scale={[.28,.27,.28]} color="#9aa9b7"/></group>))}
-   {engine?<><PartMesh position={[0,1,1.05]} scale={[.95,.7,1.05]} color="#475569"/><PartMesh position={[0,1.42,1.05]} scale={[.75,.15,.8]} color="#1e293b"/><PartMesh position={[-.9,.95,.65]} scale={[.42,.42,.4]} color="#1d4ed8"/><PartMesh position={[.82,.9,.55]} scale={[.5,.3,.6]} color="#64748b"/><PartMesh position={[0,.9,2]} scale={[1.5,.14,.18]} color="#94a3b8"/><PartMesh position={[.75,1.15,1.35]} scale={[.35,.3,.32]} color="#d97706"/></>
-   :<><PartMesh position={[0,.55,0]} scale={[.9,.38,1]} color="#64748b"/><PartMesh position={[0,.3,-1.15]} scale={[.5,.25,.8]} color="#475569"/><PartMesh position={[.35,.28,-.2]} scale={[.12,.12,2.3]} color="#9ca3af"/>{[-1,1].map(x=><PartMesh key={x} position={[x*.85,.3,0]} scale={[.16,.16,2.1]} color="#94a3b8"/>)}</>}
-   <PartMesh position={[0,-.12,0]} scale={[2.2,.06,4.2]} color="#cbd5e1"/>
-  </group>
-  <ContactShadows position={[0,-.48,0]} opacity={.28} scale={8} blur={2}/>
-  <OrbitControls makeDefault enableDamping minDistance={3.4} maxDistance={11}/>
-  <Environment preset="city"/>
-  <Html position={[0,2.2,0]} center distanceFactor={8}><span className="scene-label">{engine?'Illustrative engine-bay assembly':'Illustrative underbody assembly'}</span></Html>
+const modelAssets = {
+ alternator: {
+  title:'Automotive alternator',
+  source:'Innerscene · CC0',
+  url:'https://files.innerscene.com/library/car-alternator-1f116d77/35bce523c33d43cc36e8/car-alternator.glb',
+  scale:5,
+  note:'Realistic, real-scale generic alternator model. Not verified as the exact G4NA Sportage alternator.'
+ },
+ brake: {
+  title:'Brake caliper and vented disc',
+  source:'Innerscene · CC0',
+  url:'https://files.innerscene.com/library/brake-caliper-on-a-vented-brake-disc-52dfd54d/dafa020f8b3d606ba714/brake-caliper-on-a-vented-brake-disc.glb',
+  scale:3.2,
+  note:'Realistic generic brake assembly. Its dimensions and caliper specification are not confirmed for this Sportage trim.'
+ }
+};
+function LoadedPart({asset}) {
+ const {scene}=useGLTF(asset.url);
+ const model=useMemo(()=>scene.clone(),[scene]);
+ return <primitive object={model} scale={asset.scale} />;
+}
+function LearningScene({zone}) {
+ const asset=zone==='bay'?modelAssets.alternator:modelAssets.brake;
+ return <Canvas camera={{position:[2.8,2.1,3.8],fov:40}} dpr={[1,1.5]}>
+  <color attach="background" args={['#eaf0f7']}/>
+  <ambientLight intensity={1.7}/>
+  <directionalLight position={[4,6,5]} intensity={2.4}/>
+  <Suspense fallback={<Html center><span className="scene-label">Loading 3D component…</span></Html>}>
+   <LoadedPart asset={asset}/>
+   <Environment preset="city"/>
+  </Suspense>
+  <ContactShadows position={[0,-.7,0]} opacity={.24} scale={6} blur={2}/>
+  <OrbitControls makeDefault enableDamping minDistance={1.2} maxDistance={9}/>
+  <Html position={[0,1.5,0]} center distanceFactor={7}><span className="scene-label">{asset.title}</span></Html>
  </Canvas>;
 }
 function VehicleViewer({zone,selected,onSelect}) {
  if(zone==='body') return <div className="real-model"><div className="model-heading"><b>Real Kia Sportage QL · 2015–2021</b><a href="https://sketchfab.com/3d-models/kia-sportage-gt-line-ql-2015-2021-89cc320440ef47c289c8b4f04ffee008" target="_blank" rel="noreferrer">Model source ↗</a></div><iframe title="Kia Sportage QL interactive 3D model" src="https://sketchfab.com/models/89cc320440ef47c289c8b4f04ffee008/embed?autostart=0&ui_theme=dark" allow="autoplay; fullscreen; xr-spatial-tracking" allowFullScreen loading="lazy"/></div>;
- return <div className="scene-wrap"><LearningScene zone={zone} onPick={onSelect}/><div className="scene-hint">Drag to orbit · pinch or scroll to zoom</div><p className="scene-disclaimer">Illustrative learning assembly, not a factory scan or exact Sportage component layout.</p></div>;
+ return <div className="scene-wrap"><LearningScene zone={zone} onPick={onSelect}/><div className="scene-hint">Drag to orbit · pinch or scroll to zoom</div><p className="scene-disclaimer">{zone==='bay'?modelAssets.alternator.note:modelAssets.brake.note} The 3D geometry is an actual component model, but not a confirmed Kia OEM part.</p></div>;
 }
 function App(){
  const [page,setPage]=useState('home'),[zone,setZone]=useState('bay'),[selected,setSelected]=useState('battery'),[query,setQuery]=useState(''),[system,setSystem]=useState('engine'),[progress,setProgress]=useState(()=>JSON.parse(localStorage.getItem('autolab-react-progress')||'{"explored":[],"lessons":[],"best":0}')),[answer,setAnswer]=useState(-1),[feedback,setFeedback]=useState('');
@@ -64,7 +83,7 @@ function App(){
    <div className="stat-grid"><div><small>Components explored</small><strong>{progress.explored.length}</strong></div><div><small>Lessons completed</small><strong>{progress.lessons.length}</strong></div><div><small>Best quiz score</small><strong>{progress.best?progress.best+'%':'—'}</strong></div><div><small>Learning progress</small><strong>{pct}%</strong></div></div>
    <div className="section-title"><h2>Your learning path</h2><p>Start with vehicle anatomy, then move into systems and workshop diagnosis.</p></div><div className="dashboard-grid"><article className="panel"><h3>Vehicle anatomy & inspection</h3><p>Identify major components, their functions, positions and common failure symptoms.</p><button className="text-button" onClick={()=>go('vehicle')}>Continue learning →</button></article><article className="panel"><h3>Workshop rule</h3><p>Confirm the complaint, inspect before replacing parts, test your findings and verify the repair. A fault code is a clue—not automatic proof that a component is faulty.</p></article></div>
    <div className="section-title"><h2>Core vehicle systems</h2></div><div className="system-grid">{systems.map(s=><button className="system-card" key={s.id} onClick={()=>{setSystem(s.id);go('systems')}}><span>{s.icon}</span><b>{s.name}</b><small>{s.desc}</small></button>)}</div></>}
-  {page==='vehicle'&&<><div className="page-heading"><div><span className="eyebrow">VEHICLE LABORATORY</span><h1>Explore the Kia Sportage</h1><p>Choose a vehicle view, orbit the model, and study each component.</p></div><span className="version-tag">Sportage QL · 2016–2021</span></div><div className="notice">The exterior viewer uses a real Sportage QL model. Engine-bay and underbody scenes are labelled illustrative assemblies. Component positions vary by engine, drivetrain and market; confirm the vehicle by VIN and engine code.</div>
+  {page==='vehicle'&&<><div className="page-heading"><div><span className="eyebrow">VEHICLE LABORATORY</span><h1>Explore the Kia Sportage</h1><p>Choose a vehicle view, orbit the model, and study each component.</p></div><span className="version-tag">Sportage QL · 2016–2021</span></div><div className="notice">Reference vehicle: 2019 Sportage QL, 2.0 MPI petrol (G4NA), provisional FWD configuration. The exterior viewer is a real Sportage QL model. The component viewer now loads actual 3D alternator and brake-assembly models; these are generic training models, not verified Kia OEM fitments. Confirm every fitment by VIN and part number.</div>
    <div className="zone-tabs">{[['bay','Engine bay'],['under','Undercarriage'],['body','Real vehicle exterior']].map(([id,t])=><button key={id} className={zone===id?'selected':''} onClick={()=>setZone(id)}>{t}</button>)}</div>
    <div className="vehicle-grid"><VehicleViewer zone={zone} selected={selected} onSelect={explore}/><article className="panel part-profile"><span className="eyebrow">COMPONENT PROFILE</span><h2>{part.name}</h2><span className="local-tag">{part.local}</span><div className="profile-fields">{[['FUNCTION',part.function],['POSITION IN VEHICLE',part.location],['HOW IT GETS DAMAGED',part.damage],['SYMPTOMS WHEN FAULTY',part.symptoms],['WORKSHOP CHECK',part.check]].map(([k,v])=><div key={k}><b>{k}</b><p>{v}</p></div>)}</div><button className="primary" onClick={()=>mark('part-'+part.id)}>Mark as studied</button></article></div>
    <div className="section-title"><div><h2>Component index</h2><p>Search and select a component to study its profile.</p></div><input className="search-input" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search components…"/></div><div className="parts-grid">{filtered.map(p=><button key={p.id} onClick={()=>explore(p.id)} className={'part-row '+(p.id===selected?'chosen':'')}><span><b>{p.name}</b><small>{p.local}</small></span><span>Open →</span></button>)}</div></>}
