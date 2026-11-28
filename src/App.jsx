@@ -1,14 +1,14 @@
-import React, { Suspense, useMemo, useState } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { Environment, Html, OrbitControls, ContactShadows, useGLTF } from '@react-three/drei';
+import React, { useState } from 'react';
+import ModelViewer from './ModelViewer.jsx';
+import { vehicleViews, partModels, operationModels } from './models.js';
 import { parts, systems } from './data.js';
 
 const nav = [
   ['home','Dashboard','⌂'],['vehicle','Vehicle laboratory','🚙'],['starting','Engine start sequence','▶'],
   ['systems','Vehicle systems','⚙'],['diagnostics','Diagnostic lab','⌕'],['workshop','Workshop practice','🔧'],
-  ['quiz','Quizzes','✓'],['progress','My progress','▥']
+  ['quiz','Quizzes','✓'],['exploded','Exploded & operation','◈'],['progress','My progress','▥']
 ];
-const labels={home:'Dashboard',vehicle:'Vehicle laboratory',starting:'Engine start sequence',systems:'Vehicle systems',diagnostics:'Diagnostic lab',workshop:'Workshop practice',quiz:'Quizzes',progress:'My progress'};
+const labels={home:'Dashboard',vehicle:'Vehicle laboratory',starting:'Engine start sequence',systems:'Vehicle systems',diagnostics:'Diagnostic lab',workshop:'Workshop practice',quiz:'Quizzes',exploded:'Exploded & operation',progress:'My progress'};
 const starterSteps=[
 ['Secure the vehicle','Vehicle stationary; select P or neutral, apply the parking brake and confirm the driver is correctly seated.'],
 ['Ignition / power ON','The battery powers the instrument cluster and control modules. Warning lamps illuminate for a self-check.'],
@@ -19,79 +19,42 @@ const starterSteps=[
 ];
 const workflow=['Receive the vehicle and record the customer complaint accurately.','Confirm vehicle identity, mileage, engine code and service history.','Carry out a walk-around inspection: tyres, lights, glass, leaks and visible damage.','Check engine oil and coolant using the manufacturer’s safe procedure.','Inspect brake fluid, battery condition, belts, hoses and air filter as applicable.','Connect a scan tool when indicated; record codes and freeze-frame data before clearing anything.','Perform the scheduled service using correct parts, fluids, torque values and procedures.','Start the vehicle and check for warning lamps, leaks, abnormal noise and correct operation.','Road-test only when safe and authorised; verify the original complaint is resolved.','Record work completed, parts used and recommendations; hand over the vehicle.'];
 
-function PartMesh({name,position,scale=[1,1,1],color='#64748b',shape='box',onClick}) {
- const geometry=shape==='cylinder'?'cylinder':shape;
- return <mesh position={position} scale={scale} onClick={onClick} castShadow receiveShadow>
-  {geometry==='cylinder'?<cylinderGeometry args={[.5,.5,1,24]}/>:<boxGeometry args={[1,1,1]}/>}
-  <meshStandardMaterial color={color} roughness={.48} metalness={.2}/>
- </mesh>;
-}
-const modelAssets = {
- alternator: {
-  title:'Automotive alternator',
-  source:'Innerscene · CC0',
-  url:'https://files.innerscene.com/library/car-alternator-1f116d77/35bce523c33d43cc36e8/car-alternator.glb',
-  scale:5,
-  note:'Realistic, real-scale generic alternator model. Not verified as the exact G4NA Sportage alternator.'
- },
- brake: {
-  title:'Brake caliper and vented disc',
-  source:'Innerscene · CC0',
-  url:'https://files.innerscene.com/library/brake-caliper-on-a-vented-brake-disc-52dfd54d/dafa020f8b3d606ba714/brake-caliper-on-a-vented-brake-disc.glb',
-  scale:3.2,
-  note:'Realistic generic brake assembly. Its dimensions and caliper specification are not confirmed for this Sportage trim.'
- }
-};
-function LoadedPart({asset}) {
- const {scene}=useGLTF(asset.url);
- const model=useMemo(()=>scene.clone(),[scene]);
- return <primitive object={model} scale={asset.scale} />;
-}
-function LearningScene({zone}) {
- const asset=zone==='bay'?modelAssets.alternator:modelAssets.brake;
- return <Canvas camera={{position:[2.8,2.1,3.8],fov:40}} dpr={[1,1.5]}>
-  <color attach="background" args={['#eaf0f7']}/>
-  <ambientLight intensity={1.7}/>
-  <directionalLight position={[4,6,5]} intensity={2.4}/>
-  <Suspense fallback={<Html center><span className="scene-label">Loading 3D component…</span></Html>}>
-   <LoadedPart asset={asset}/>
-   <Environment preset="city"/>
-  </Suspense>
-  <ContactShadows position={[0,-.7,0]} opacity={.24} scale={6} blur={2}/>
-  <OrbitControls makeDefault enableDamping minDistance={1.2} maxDistance={9}/>
-  <Html position={[0,1.5,0]} center distanceFactor={7}><span className="scene-label">{asset.title}</span></Html>
- </Canvas>;
-}
-function VehicleViewer({zone,selected,onSelect}) {
- if(zone==='body') return <div className="real-model"><div className="model-heading"><b>Real Kia Sportage QL · 2015–2021</b><a href="https://sketchfab.com/3d-models/kia-sportage-gt-line-ql-2015-2021-89cc320440ef47c289c8b4f04ffee008" target="_blank" rel="noreferrer">Model source ↗</a></div><iframe title="Kia Sportage QL interactive 3D model" src="https://sketchfab.com/models/89cc320440ef47c289c8b4f04ffee008/embed?autostart=0&ui_theme=dark" allow="autoplay; fullscreen; xr-spatial-tracking" allowFullScreen loading="lazy"/></div>;
- return <div className="scene-wrap"><LearningScene zone={zone} onPick={onSelect}/><div className="scene-hint">Drag to orbit · pinch or scroll to zoom</div><p className="scene-disclaimer">{zone==='bay'?modelAssets.alternator.note:modelAssets.brake.note} The 3D geometry is an actual component model, but not a confirmed Kia OEM part.</p></div>;
-}
+const views=[['exterior','Exterior'],['engine','Engine'],['suspension','Suspension'],['parts','Parts']];
+// Which parts are listed under each view.
+const suspensionIds=['shock','controlarm','brakecaliper','driveshaft'];
+
+const engineIds=['alternator','starter','oilcap','airfilter'];
+const inView=(view,p)=>view==='engine'?engineIds.includes(p.id):view==='suspension'?suspensionIds.includes(p.id):true;
 function App(){
- const [page,setPage]=useState('home'),[zone,setZone]=useState('bay'),[selected,setSelected]=useState('battery'),[query,setQuery]=useState(''),[system,setSystem]=useState('engine'),[progress,setProgress]=useState(()=>JSON.parse(localStorage.getItem('autolab-react-progress')||'{"explored":[],"lessons":[],"best":0}')),[answer,setAnswer]=useState(-1),[feedback,setFeedback]=useState('');
+ const [page,setPage]=useState('home'),[view,setView]=useState('exterior'),[variant,setVariant]=useState(0),[operationView,setOperationView]=useState('exploded'),[selected,setSelected]=useState('battery'),[query,setQuery]=useState(''),[system,setSystem]=useState('engine'),[progress,setProgress]=useState(()=>JSON.parse(localStorage.getItem('autolab-react-progress')||'{"explored":[],"lessons":[],"best":0}')),[answer,setAnswer]=useState(-1),[feedback,setFeedback]=useState('');
  const save=(next)=>{setProgress(next);localStorage.setItem('autolab-react-progress',JSON.stringify(next));};
  const part=parts.find(p=>p.id===selected)||parts[0];
- const filtered=parts.filter(p=>(zone==='body'||p.zone===zone)&&(p.name+' '+p.local).toLowerCase().includes(query.toLowerCase()));
+ const filtered=parts.filter(p=>inView(view,p)&&(p.name+' '+p.local).toLowerCase().includes(query.toLowerCase()));
  const mark=(id)=>{if(!progress.lessons.includes(id))save({...progress,lessons:[...progress.lessons,id]});};
- const explore=(id)=>{setSelected(id);if(!progress.explored.includes(id))save({...progress,explored:[...progress.explored,id]});};
+ const openView=(v)=>{setView(v);setVariant(0);setQuery('');const first=parts.find(p=>inView(v,p));if(v!=='exterior'&&first)setSelected(first.id);};
+ const explore=(id)=>{setSelected(id);setView('parts');document.getElementById('viewer-top')?.scrollIntoView({behavior:'smooth'});if(!progress.explored.includes(id))save({...progress,explored:[...progress.explored,id]});};
  const pct=Math.round(progress.lessons.length/6*100);
- const go=(p)=>{setPage(p);window.scrollTo({top:0,behavior:'smooth'});};
+ const go=(p)=>{setPage(p);setAnswer(-1);setFeedback('');window.scrollTo({top:0,behavior:'smooth'});};
  return <div className="app-shell">
   <aside className="sidebar"><div className="brand"><span className="brand-icon">⚙</span><span><b>AutoLab</b><small>Engineering Academy</small></span></div><div className="nav-caption">LEARNING</div>{nav.map(([id,title,icon])=><button key={id} onClick={()=>go(id)} className={'nav-item '+(page===id?'active':'')}><span>{icon}</span>{title}</button>)}<div className="sidebar-foot">Kia Sportage QL · 2016–2021<br/>Learning edition</div></aside>
   <main className="main-area"><header className="topbar"><button className="mobile-brand" onClick={()=>go('home')}>AutoLab</button><b>{labels[page]}</b><span className="status-pill">LOCAL STUDY MODE</span></header><nav className="mobile-nav">{nav.map(([id,title,icon])=><button key={id} onClick={()=>go(id)} className={page===id?'active':''}><span>{icon}</span><small>{title}</small></button>)}</nav>
   <div className="page-content">
-  {page==='home'&&<><section className="hero"><div><span className="eyebrow">PRACTICAL AUTOMOTIVE LEARNING</span><h1>Understand the car.<br/>Diagnose the fault.</h1><p>Build workshop knowledge one system at a time. Explore components, learn inspection routines and practise fault diagnosis using a Kia Sportage as a reference vehicle.</p><div className="actions"><button className="primary" onClick={()=>go('vehicle')}>Explore the vehicle →</button><button className="secondary" onClick={()=>go('diagnostics')}>Start a diagnosis</button></div></div><div className="hero-art">🚙</div></section>
+  {page==='home'&&<><section className="hero"><div><span className="eyebrow">PRACTICAL AUTOMOTIVE LEARNING</span><h1>Understand the car.<br/>Diagnose the fault.</h1><p>Build workshop knowledge one system at a time. Explore components, learn inspection routines and practise fault diagnosis using a Kia Sportage as a reference vehicle.</p><div className="actions"><button className="primary" onClick={()=>go('vehicle')}>Explore the vehicle →</button><button className="secondary" onClick={()=>go('diagnostics')}>Start a diagnosis</button></div></div><div className="hero-art"><div className="hero-visual"><span>3D</span><b>INTERACTIVE VEHICLE LAB</b><small>Explore assemblies · inspect components · learn mechanisms</small></div></div></section>
    <div className="stat-grid"><div><small>Components explored</small><strong>{progress.explored.length}</strong></div><div><small>Lessons completed</small><strong>{progress.lessons.length}</strong></div><div><small>Best quiz score</small><strong>{progress.best?progress.best+'%':'—'}</strong></div><div><small>Learning progress</small><strong>{pct}%</strong></div></div>
    <div className="section-title"><h2>Your learning path</h2><p>Start with vehicle anatomy, then move into systems and workshop diagnosis.</p></div><div className="dashboard-grid"><article className="panel"><h3>Vehicle anatomy & inspection</h3><p>Identify major components, their functions, positions and common failure symptoms.</p><button className="text-button" onClick={()=>go('vehicle')}>Continue learning →</button></article><article className="panel"><h3>Workshop rule</h3><p>Confirm the complaint, inspect before replacing parts, test your findings and verify the repair. A fault code is a clue—not automatic proof that a component is faulty.</p></article></div>
    <div className="section-title"><h2>Core vehicle systems</h2></div><div className="system-grid">{systems.map(s=><button className="system-card" key={s.id} onClick={()=>{setSystem(s.id);go('systems')}}><span>{s.icon}</span><b>{s.name}</b><small>{s.desc}</small></button>)}</div></>}
-  {page==='vehicle'&&<><div className="page-heading"><div><span className="eyebrow">VEHICLE LABORATORY</span><h1>Explore the Kia Sportage</h1><p>Choose a vehicle view, orbit the model, and study each component.</p></div><span className="version-tag">Sportage QL · 2016–2021</span></div><div className="notice">Reference vehicle: 2019 Sportage QL, 2.0 MPI petrol (G4NA), provisional FWD configuration. The exterior viewer is a real Sportage QL model. The component viewer now loads actual 3D alternator and brake-assembly models; these are generic training models, not verified Kia OEM fitments. Confirm every fitment by VIN and part number.</div>
-   <div className="zone-tabs">{[['bay','Engine bay'],['under','Undercarriage'],['body','Real vehicle exterior']].map(([id,t])=><button key={id} className={zone===id?'selected':''} onClick={()=>setZone(id)}>{t}</button>)}</div>
-   <div className="vehicle-grid"><VehicleViewer zone={zone} selected={selected} onSelect={explore}/><article className="panel part-profile"><span className="eyebrow">COMPONENT PROFILE</span><h2>{part.name}</h2><span className="local-tag">{part.local}</span><div className="profile-fields">{[['FUNCTION',part.function],['POSITION IN VEHICLE',part.location],['HOW IT GETS DAMAGED',part.damage],['SYMPTOMS WHEN FAULTY',part.symptoms],['WORKSHOP CHECK',part.check]].map(([k,v])=><div key={k}><b>{k}</b><p>{v}</p></div>)}</div><button className="primary" onClick={()=>mark('part-'+part.id)}>Mark as studied</button></article></div>
+  {page==='vehicle'&&<><div className="page-heading"><div><span className="eyebrow">VEHICLE LABORATORY</span><h1>Explore the Kia Sportage</h1><p>Rotate the car, engine and suspension, then open any part in 3D.</p></div><span className="version-tag">Sportage QL · 2016–2021</span></div><div className="notice">Reference vehicle: 2019 Sportage QL, 2.0 MPI petrol (G4NA), provisional FWD. Only the exterior model is a Sportage. Engine, suspension and part models are for training, not verified Kia fitments. Confirm every fitment by VIN and part number.</div>
+   <div className="zone-tabs" id="viewer-top">{views.map(([id,t])=><button key={id} className={view===id?'selected':''} onClick={()=>openView(id)}>{t}</button>)}</div>
+   <div className="vehicle-grid"><div>{vehicleViews[view]?.length>1&&<div className="variant-tabs">{vehicleViews[view].map((v,i)=><button key={v.id} className={variant===i?'selected':''} onClick={()=>setVariant(i)}>{v.title}</button>)}</div>}<ModelViewer model={view==='parts'?partModels[selected]:vehicleViews[view][variant]}/></div><article className="panel part-profile"><span className="eyebrow">COMPONENT PROFILE</span><h2>{part.name}</h2><span className="local-tag">{part.local}</span><div className="profile-fields">{[['FUNCTION',part.function],['POSITION IN VEHICLE',part.location],['HOW IT GETS DAMAGED',part.damage],['SYMPTOMS WHEN FAULTY',part.symptoms],['WORKSHOP CHECK',part.check]].map(([k,v])=><div key={k}><b>{k}</b><p>{v}</p></div>)}</div><div className="actions">{view!=='parts'&&<button className="secondary" onClick={()=>explore(part.id)}>View this part in 3D</button>}<button className="primary" onClick={()=>mark('part-'+part.id)}>Mark as studied</button></div></article></div>
    <div className="section-title"><div><h2>Component index</h2><p>Search and select a component to study its profile.</p></div><input className="search-input" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search components…"/></div><div className="parts-grid">{filtered.map(p=><button key={p.id} onClick={()=>explore(p.id)} className={'part-row '+(p.id===selected?'chosen':'')}><span><b>{p.name}</b><small>{p.local}</small></span><span>Open →</span></button>)}</div></>}
   {page==='systems'&&<><div className="page-heading"><div><span className="eyebrow">SYSTEMS LIBRARY</span><h1>Vehicle systems</h1><p>Study the purpose, main components and workshop inspection points.</p></div></div><div className="system-layout"><div className="system-list">{systems.map(s=><button key={s.id} onClick={()=>setSystem(s.id)} className={system===s.id?'chosen':''}>{s.icon} {s.name}</button>)}</div>{(()=>{const s=systems.find(x=>x.id===system)||systems[0];return <article className="panel system-detail"><span className="eyebrow">SYSTEM STUDY</span><h2>{s.icon} {s.name}</h2><p>{s.desc}</p><div className="profile-fields"><div><b>MAIN COMPONENTS</b><p>{s.parts}</p></div><div><b>WORKSHOP INSPECTION</b><p>{s.checks}</p></div></div><button className="primary" onClick={()=>mark('system-'+s.id)}>Mark system studied</button></article>})()}</div></>}
   {page==='starting'&&<><div className="page-heading"><div><span className="eyebrow">FROM KEY-OFF TO RUNNING</span><h1>How a modern car starts</h1><p>Follow the sequence and understand what the main systems are doing.</p></div></div><div className="notice">Safety: select P (automatic) or neutral (manual), apply the parking brake, keep clear of moving belts and fans, and follow the vehicle owner's manual.</div><div className="timeline">{starterSteps.map(([t,d],i)=><article className="panel timeline-item" key={t}><span>{i+1}</span><div><h3>{t}</h3><p>{d}</p></div></article>)}</div><button className="primary" onClick={()=>mark('starting-sequence')}>Mark sequence studied</button></>}
   {page==='diagnostics'&&<><div className="page-heading"><div><span className="eyebrow">DIAGNOSTIC LAB</span><h1>Workshop fault simulation</h1><p>Choose the safest first test based on the symptom.</p></div></div><article className="panel case-panel"><span className="local-tag">CASE 01 · SLOW CRANKING</span><h2>Which test should you carry out first?</h2>{['Replace the starter motor immediately.','Inspect battery condition and terminals, then test voltage under load.','Replace the ECU.','Clean the fuel injectors.'].map((v,i)=><button className={'answer-option '+(answer===i?'chosen':'')} key={v} onClick={()=>{setAnswer(i);setFeedback(i===1?'Correct. Test battery state, terminal condition and voltage drop before condemning the starter.':'Not yet. Start with battery condition, terminal inspection and voltage-drop testing before replacing components.')}}>{v}</button>)}{feedback&&<div className="feedback">{feedback}</div>}</article></>}
   {page==='workshop'&&<><div className="page-heading"><div><span className="eyebrow">PRACTICAL WORKSHOP</span><h1>Routine service workflow</h1><p>Use this as a learning checklist. Follow Rana Motors procedures and Kia service information for the actual vehicle.</p></div></div><div className="notice">Never work under a vehicle supported only by a jack. Use correctly rated axle stands on firm ground. Follow workshop safety rules and manufacturer torque specifications.</div><div className="checklist">{workflow.map((v,i)=><label className="check-row" key={v}><input type="checkbox"/><span>{v}</span></label>)}</div></>}
   {page==='quiz'&&<><div className="page-heading"><div><span className="eyebrow">KNOWLEDGE CHECK</span><h1>Automotive fundamentals</h1><p>Answer the question and check your understanding.</p></div></div><article className="panel case-panel"><h2>What is the alternator's primary function while the engine is running?</h2>{['To crank the engine','To supply electrical power and recharge the battery','To cool the engine coolant','To control fuel pressure'].map((v,i)=><button key={v} className={'answer-option '+(answer===i?'chosen':'')} onClick={()=>{setAnswer(i);setFeedback(i===1?'Correct. The alternator supplies electrical loads and recharges the battery.':'Incorrect. The alternator generates electrical power while the engine runs.')}}>{v}</button>)}{feedback&&<div className="feedback">{feedback}</div>}<button className="primary" onClick={()=>{if(answer===1)save({...progress,best:Math.max(progress.best,100)});setAnswer(-1);setFeedback('')}}>Try again</button></article></>}
+
+  {page==='exploded'&&<><div className="page-heading"><div><span className="eyebrow">3D MECHANISM STUDIO</span><h1>Exploded views & live operation</h1><p>Study how assemblies fit together, then watch a four-cylinder engine mechanism move.</p></div><span className="version-tag">Interactive 3D</span></div><div className="notice">Training models are not confirmed Kia G4NA components. The animated four-cylinder model demonstrates piston, connecting-rod and crankshaft motion; it is not a full simulation of the Sportage engine ECU, fuel, ignition, cooling or lubrication systems.</div><div className="zone-tabs">{[['exploded','Engine exploded view'],['running','Engine in operation'],['disassembled','Engine parts breakdown']].map(([id,label])=><button key={id} className={operationView===id?'selected':''} onClick={()=>setOperationView(id)}>{label}</button>)}</div><div className="vehicle-grid"><ModelViewer model={operationModels[operationView]}/><article className="panel part-profile"><span className="eyebrow">WHAT TO OBSERVE</span><h2>{operationView==='running'?'Four-stroke engine motion':operationView==='exploded'?'Engine assembly — exploded':'Internal engine components'}</h2><div className="profile-fields">{(operationView==='running'?[['PISTON','Moves up and down inside the cylinder.'],['CONNECTING ROD','Transfers piston force to the crankshaft.'],['CRANKSHAFT','Converts reciprocating motion into rotation.'],['CYCLE','Intake, compression, power and exhaust occur in sequence.']]:operationView==='exploded'?[['CYLINDER HEAD','Closes the top of the cylinders and houses valve gear.'],['ENGINE BLOCK','Supports cylinders, crankshaft and major engine loads.'],['PISTON & ROD','Move as a connected reciprocating assembly.'],['CRANKSHAFT','Receives force from the connecting rods.']]:[['PISTON RINGS','Seal combustion pressure and control oil on the cylinder wall.'],['PISTON PIN','Connects the piston to the small end of the rod.'],['CONNECTING ROD','Links piston motion to the crankshaft.'],['CRANKSHAFT','Provides rotating output to the flywheel/transmission.']]).map(([k,v])=><div key={k}><b>{k}</b><p>{v}</p></div>)}</div><p className="model-note">{operationModels[operationView].note}</p><button className="primary" onClick={()=>{setPage('vehicle');setView('engine');setVariant(0);}}>Go to vehicle engine catalogue</button></article></div><div className="section-title"><h2>How the engine produces rotation</h2><p>Use the model to follow the mechanism.</p></div><div className="operation-steps">{[['1 · Intake','The intake valve opens and the piston moves down, drawing air-fuel mixture (port-injected petrol) into the cylinder.'],['2 · Compression','Valves close and the piston rises, compressing the charge.'],['3 · Power','The spark plug ignites the compressed mixture; expanding gases push the piston down.'],['4 · Exhaust','The exhaust valve opens and the piston rises, pushing burnt gases out.']].map(([h,d])=><article className="panel" key={h}><b>{h}</b><p>{d}</p></article>)}</div></>}
+
   {page==='progress'&&<><div className="page-heading"><div><span className="eyebrow">YOUR STUDY RECORD</span><h1>My progress</h1><p>Saved locally on this device.</p></div></div><div className="stat-grid"><div><small>Explored components</small><strong>{progress.explored.length}</strong></div><div><small>Completed lessons</small><strong>{progress.lessons.length}</strong></div><div><small>Best quiz score</small><strong>{progress.best}%</strong></div><div><small>Progress</small><strong>{pct}%</strong></div></div><article className="panel"><h3>Studied components</h3><p>{progress.explored.map(id=>parts.find(p=>p.id===id)?.name).filter(Boolean).join(' · ')||'No components studied yet.'}</p><button className="secondary" onClick={()=>{if(confirm('Clear locally saved learning progress?'))save({explored:[],lessons:[],best:0})}}>Reset local progress</button></article></>}
   </div></main>
  </div>;
