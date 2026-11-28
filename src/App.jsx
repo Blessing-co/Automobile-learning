@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ModelViewer from './ModelViewer.jsx';
-import { vehicleViews, partModels } from './models.js';
+import { vehicleViews, partModels, operationModels } from './models.js';
 import { parts, systems } from './data.js';
 
 const nav = [
@@ -21,7 +21,8 @@ const workflow=['Receive the vehicle and record the customer complaint accuratel
 
 const views=[['exterior','Exterior'],['engine','Engine'],['suspension','Suspension'],['parts','Parts']];
 // Which parts are listed under each view.
-const suspensionIds=['shock','controlarm','brakecaliper','driveshaft'];\nconst operationModels={exploded:{id:'0a740cd20bfd4107a1e3c9fbcc5fe70b',title:'Engine exploded view',author:'rondinellisophia',note:'A generic exploded engine model. The publisher listing identifies a CC Attribution licence; component fitment and model internals are not verified for Kia G4NA.'},running:{id:'e14ebe6d273d49a3becda6802270b4b0',title:'Rigged 4-cylinder engine — animated',author:'david.gnzlv',note:'A rigged and animated generic four-cylinder combustion engine. The publisher lists CC Attribution. Use it to observe piston/rod/crankshaft motion, not as an exact Sportage engine.'},disassembled:{id:'ac94b606afca44e6b7fe3e537eb50f84',title:'Four-cylinder piston and crankshaft assembly',author:'moalshaboul',note:'A generic six-part piston and crankshaft teaching assembly. It is not a complete engine or a Kia-specific part.'}};\n
+const suspensionIds=['shock','controlarm','brakecaliper','driveshaft'];
+
 const engineIds=['alternator','starter','oilcap','airfilter'];
 const inView=(view,p)=>view==='engine'?engineIds.includes(p.id):view==='suspension'?suspensionIds.includes(p.id):true;
 function App(){
@@ -38,7 +39,7 @@ function App(){
   <aside className="sidebar"><div className="brand"><span className="brand-icon">⚙</span><span><b>AutoLab</b><small>Engineering Academy</small></span></div><div className="nav-caption">LEARNING</div>{nav.map(([id,title,icon])=><button key={id} onClick={()=>go(id)} className={'nav-item '+(page===id?'active':'')}><span>{icon}</span>{title}</button>)}<div className="sidebar-foot">Kia Sportage QL · 2016–2021<br/>Learning edition</div></aside>
   <main className="main-area"><header className="topbar"><button className="mobile-brand" onClick={()=>go('home')}>AutoLab</button><b>{labels[page]}</b><span className="status-pill">LOCAL STUDY MODE</span></header><nav className="mobile-nav">{nav.map(([id,title,icon])=><button key={id} onClick={()=>go(id)} className={page===id?'active':''}><span>{icon}</span><small>{title}</small></button>)}</nav>
   <div className="page-content">
-  {page==='home'&&<><section className="hero"><div><span className="eyebrow">PRACTICAL AUTOMOTIVE LEARNING</span><h1>Understand the car.<br/>Diagnose the fault.</h1><p>Build workshop knowledge one system at a time. Explore components, learn inspection routines and practise fault diagnosis using a Kia Sportage as a reference vehicle.</p><div className="actions"><button className="primary" onClick={()=>go('vehicle')}>Explore the vehicle →</button><button className="secondary" onClick={()=>go('diagnostics')}>Start a diagnosis</button></div></div><div className="hero-art"><ModelViewer model={vehicleViews.exterior[0]}/></div></section>
+  {page==='home'&&<><section className="hero"><div><span className="eyebrow">PRACTICAL AUTOMOTIVE LEARNING</span><h1>Understand the car.<br/>Diagnose the fault.</h1><p>Build workshop knowledge one system at a time. Explore components, learn inspection routines and practise fault diagnosis using a Kia Sportage as a reference vehicle.</p><div className="actions"><button className="primary" onClick={()=>go('vehicle')}>Explore the vehicle →</button><button className="secondary" onClick={()=>go('diagnostics')}>Start a diagnosis</button></div></div><div className="hero-art"><div className="hero-visual"><span>3D</span><b>INTERACTIVE VEHICLE LAB</b><small>Explore assemblies · inspect components · learn mechanisms</small></div></div></section>
    <div className="stat-grid"><div><small>Components explored</small><strong>{progress.explored.length}</strong></div><div><small>Lessons completed</small><strong>{progress.lessons.length}</strong></div><div><small>Best quiz score</small><strong>{progress.best?progress.best+'%':'—'}</strong></div><div><small>Learning progress</small><strong>{pct}%</strong></div></div>
    <div className="section-title"><h2>Your learning path</h2><p>Start with vehicle anatomy, then move into systems and workshop diagnosis.</p></div><div className="dashboard-grid"><article className="panel"><h3>Vehicle anatomy & inspection</h3><p>Identify major components, their functions, positions and common failure symptoms.</p><button className="text-button" onClick={()=>go('vehicle')}>Continue learning →</button></article><article className="panel"><h3>Workshop rule</h3><p>Confirm the complaint, inspect before replacing parts, test your findings and verify the repair. A fault code is a clue—not automatic proof that a component is faulty.</p></article></div>
    <div className="section-title"><h2>Core vehicle systems</h2></div><div className="system-grid">{systems.map(s=><button className="system-card" key={s.id} onClick={()=>{setSystem(s.id);go('systems')}}><span>{s.icon}</span><b>{s.name}</b><small>{s.desc}</small></button>)}</div></>}
