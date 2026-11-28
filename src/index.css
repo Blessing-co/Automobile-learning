@@ -174,3 +174,22 @@
 @keyframes sim-spark{0%,100%{opacity:.1}50%{opacity:1;filter:drop-shadow(0 0 7px #ffe26c)}}
 @media(max-width:760px){.start-sim-heading{flex-direction:column}.sim-tag{white-space:normal}.sim-phase-strip{grid-template-columns:repeat(5,minmax(74px,1fr));overflow-x:auto;padding-bottom:4px}.sim-phase-strip button{flex-direction:column;align-items:flex-start}.sim-phase-strip button b{font-size:10px}.car-cutaway{padding:12px 8px}.car-cutaway svg{width:760px;max-width:none}.car-cutaway{overflow-x:auto}.sim-explanation{grid-template-columns:1fr}.sim-component-card{grid-template-columns:1fr}.sim-controls button{flex:1 1 42%}.sim-status small{font-size:8px}}
 @media(prefers-reduced-motion:reduce){.car-cutaway *, .car-cutaway *::before{animation:none!important;transition:none!important}}
+
+
+/* Lightweight native-WebGL 3D start-up teaching scene */
+.sim-3d-shell{position:relative;overflow:hidden;border:1px solid #243b53;border-radius:18px;background:#091321;color:#e9f2fc}
+.sim-3d-stage{position:relative;min-height:390px;height:min(58vw,570px);max-height:570px;touch-action:pan-y}
+.sim-3d-stage canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.sim-3d-stage canvas:active{cursor:grabbing}
+.sim-3d-badge,.sim-3d-hint{position:absolute;left:14px;top:14px;padding:7px 10px;border-radius:8px;background:#14283cdd;color:#d8eaff;font-size:10px;letter-spacing:.08em;font-weight:800;pointer-events:none}
+.sim-3d-hint{top:auto;bottom:14px;font-size:11px;letter-spacing:0;font-weight:500;color:#b9cadc}
+.sim-3d-part-picks{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:5px;max-height:calc(100% - 24px);overflow:auto;max-width:145px}
+.sim-3d-part-picks button{border:1px solid #52677c;background:#132438dd;color:#dce8f4;padding:6px 8px;border-radius:7px;text-align:left;font-size:10px}
+.sim-3d-part-picks button.active{background:#f3bd55;color:#19283a;border-color:#f3bd55}
+.sim-3d-status{position:absolute;z-index:1;left:14px;top:52px;display:flex;align-items:center;gap:8px;pointer-events:none}
+.sim-3d-status b{font-size:13px}.sim-3d-status small{font-size:9px;letter-spacing:.08em;color:#a9bfd4}
+.sim-3d-status>span{width:8px;height:8px;border-radius:50%;background:#f3bd55}.sim-3d-status .running-dot{background:#54d69a}.sim-3d-status .off-dot{background:#73869a}
+.sim-3d-legend{display:flex;gap:16px;flex-wrap:wrap;padding:11px 15px;border-top:1px solid #263b50;color:#c2d1df;font-size:11px}
+.sim-3d-legend span{display:flex;align-items:center;gap:6px}.sim-3d-legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.sim-3d-legend .key-electric{background:#2ea4f5}.sim-3d-legend .key-fuel{background:#f29a2e}.sim-3d-legend .key-oil{background:#d4ad40}.sim-3d-legend .key-exhaust{background:#8d9aa8}
+@media(max-width:600px){.sim-3d-stage{height:410px;min-height:410px}.sim-3d-part-picks{max-width:112px;right:7px;top:8px}.sim-3d-part-picks button{font-size:9px;padding:5px}.sim-3d-badge{font-size:9px;left:8px;top:8px}.sim-3d-status{left:9px;top:39px}.sim-3d-status small{display:none}.sim-3d-hint{max-width:190px;left:8px;bottom:8px;font-size:10px}.sim-3d-legend{gap:9px;font-size:10px}}
