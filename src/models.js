@@ -4,7 +4,7 @@ export const vehicleViews = {
  exterior: [m('89cc320440ef47c289c8b4f04ffee008', 'Kia Sportage GT-Line QL', 'Merc_TV', 'Exterior model for the QL generation; verify exact trim visually.')],
  engine: [
   m('448e9e6fdd0c469ba14573f1a35c2ee0', 'Four-cylinder engine assembly', 'devkrsm', 'Generic CAD engine; not the Kia G4NA.'),
-  m('be81c8572c8842a4b90e3f42e68e3e27', 'Detailed four-cylinder engine', '3DHorse', 'Nissan Altima hybrid engine; not the Kia G4NA and relatively heavy.')
+  m('be81c8572c8842a4b90e3f42e68e3e27', 'Detailed four-cylinder engine', '3DHorse', 'Nissan Altima hybrid engine; not the Kia G4NA and relatively heavy.'),\n  m('243837fb3a40440485c8f8c39b6742ba', 'Low-poly animated engine set', 'Savalon', 'Lightweight rigged engine/piston models for motion study; not a Kia-specific assembly.')
  ],
  suspension: [
   m('bd202ee134454402bf398ca906c8e2f5', 'MacPherson strut', 'vr.designer_09', 'Generic strut assembly.'),
