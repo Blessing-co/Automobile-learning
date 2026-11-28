@@ -59,3 +59,15 @@
 .mechanism-disclaimer{font-size:10px;line-height:1.6;color:#8290a1;margin:13px 0 0}
 @media(max-width:700px){.mechanism-lab{padding:13px;margin:16px 0}.mechanism-heading{flex-direction:column}.mechanism-heading h2{font-size:18px}.mechanism-tag{align-self:flex-start}.mechanism-toolbar span{width:100%;margin:0}.mechanism-canvas svg{min-width:540px}.mechanism-canvas{overflow-x:auto}.component-selector{grid-template-columns:1fr}.component-buttons button{flex:1 1 auto}.phase-controls button{flex:1 1 42%}}
 @media(prefers-reduced-motion:reduce){.mechanism-canvas *{animation:none!important;transition:none!important}}
+
+
+/* Data-saver 3D viewer gate */
+.viewer-gate{min-height:clamp(300px,42vw,520px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;background:radial-gradient(ellipse at center,#1c3047,#101827)}
+.viewer-gate-icon{width:68px;height:68px;display:grid;place-items:center;border:1px solid #45617f;border-radius:18px;background:#ffffff0b;color:#a9d6ff;font:800 24px Manrope}
+.viewer-gate>b{font:700 17px Manrope;color:#f4f7fb}
+.viewer-gate>p{max-width:440px;margin:0;color:#c0cede;font-size:12px;line-height:1.65}
+.viewer-gate>small{max-width:460px;color:#8fa4bc;font-size:10px;line-height:1.6}
+.viewer-gate .primary{margin-top:3px}
+.viewer-data-controls{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 13px;background:#1a293b;color:#aebed1;font-size:10px}
+.viewer-data-controls button{flex:0 0 auto;border:1px solid #65778c;border-radius:8px;background:transparent;color:#fff;padding:7px 10px;font-size:10px;cursor:pointer}
+@media(max-width:700px){.viewer-gate{min-height:340px;padding:18px}.viewer-data-controls{align-items:flex-start;flex-direction:column}.viewer-data-controls button{width:100%}}
