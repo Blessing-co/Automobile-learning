@@ -1,25 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-// Models load straight away. Each runs inside its own iframe, so a failed model cannot blank the app.
-export default function ModelViewer({ model }) {
-  if (!model) return <div className="viewer"><div className="viewer-empty">No good 3D model for this part yet. Study the profile and inspect it on a real vehicle.</div></div>;
-  const page = `https://sketchfab.com/3d-models/${model.id}`;
-  return (
-    <div className="viewer">
-      <div className="model-heading">
-        <b>{model.title}</b>
-        <a href={page} target="_blank" rel="noreferrer">by {model.author} · open full screen ↗</a>
-      </div>
-      <div className="viewer-stage">
-        <iframe
-          key={model.id}
-          title={model.title}
-          src={`https://sketchfab.com/models/${model.id}/embed?autostart=1&ui_theme=dark`}
-          allow="autoplay; fullscreen; xr-spatial-tracking"
-          allowFullScreen
-        />
-      </div>
-      <p className="viewer-note">Drag to rotate, pinch or scroll to zoom. Needs internet. {model.note}</p>
-    </div>
-  );
+export default function ModelViewer({ model, compact = false }) {
+  const [failed, setFailed] = useState(false);
+  if (!model) return <div className="viewer viewer-empty">No suitable 3D model has been sourced for this component yet.</div>;
+  const page = `https://sketchfab.com/3d-models/${model.title.toLowerCase().replace(/[^a-z0-9]+/g,'-')}-${model.id}`;
+  const src = `https://sketchfab.com/models/${model.id}/embed?autostart=1&ui_theme=dark&ui_infos=0&ui_help=0&ui_settings=0&ui_watermark=1&ui_watermark_link=1`;
+  return <section className={`viewer ${compact?'viewer-compact':''}`}>
+    <div className="model-heading"><div><b>{model.title}</b><small>3D model by {model.author}</small></div><a href={page} target="_blank" rel="noreferrer">Open model ↗</a></div>
+    {!failed ? <div className="viewer-stage"><iframe key={model.id} title={model.title} src={src} loading="lazy" allow="autoplay; fullscreen; xr-spatial-tracking" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" onError={()=>setFailed(true)}/></div> : <div className="viewer-empty">The 3D provider could not be loaded. Check your connection or open the model directly above.</div>}
+    <p className="viewer-note">Drag to rotate · pinch or scroll to zoom. {model.note}</p>
+  </section>;
 }
