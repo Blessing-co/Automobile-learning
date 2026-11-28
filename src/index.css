@@ -84,3 +84,20 @@
 .low-data-viewer .viewer-data-controls a{flex:0 0 auto;color:#9bc5ff;text-decoration:none;font-size:10px;font-weight:700}
 .low-data-viewer .viewer-note{color:#8fa4bc}
 @media(max-width:700px){.low-data-stage{min-height:260px;padding:10px}.low-data-stage svg{max-height:280px}.low-data-viewer .viewer-data-controls a{width:100%}}
+
+
+/* Low-data viewer controls and loading state */
+.viewer-quality{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;width:min(100%,620px);margin:4px 0}
+.viewer-quality button{display:flex;flex-direction:column;gap:5px;align-items:flex-start;text-align:left;padding:10px;border:1px solid #435a74;border-radius:10px;background:#142338;color:#e5edf7;cursor:pointer}
+.viewer-quality button.selected{border-color:#72b4ff;background:#1d3a5a;box-shadow:inset 0 0 0 1px #72b4ff}
+.viewer-quality button b{font-size:11px}
+.viewer-quality button small{font-size:9px;line-height:1.45;color:#b5c5d8}
+.viewer-stage{position:relative}
+.viewer-loading{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px;text-align:center;background:#101827;color:#e6eef8}
+.viewer-loading p{max-width:380px;font-size:12px;line-height:1.6}
+.viewer-loading small{font-size:10px;color:#aebed1}
+.viewer-spinner{width:27px;height:27px;border:3px solid #60758e;border-top-color:#9bcaff;border-radius:50%;animation:viewer-spin .8s linear infinite}
+@keyframes viewer-spin{to{transform:rotate(360deg)}}
+.viewer-data-controls label{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.viewer-data-controls select{max-width:125px;padding:6px 8px;border:1px solid #65778c;border-radius:7px;background:#20334a;color:#fff;font-size:10px}
+@media(max-width:700px){.viewer-quality{grid-template-columns:1fr}.viewer-quality button{padding:8px 10px}.viewer-quality button small{font-size:10px}.viewer-data-controls label{width:100%;justify-content:space-between}.viewer-data-controls select{max-width:none;flex:1}}
