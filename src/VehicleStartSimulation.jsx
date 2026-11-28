@@ -39,11 +39,13 @@ function makeObjects(t,phase,selected){
  const objects=[];
  const add=(id,shape,pos,scale,color,rot=[0,0,0])=>objects.push({id,shape,pos,scale,color: id===selected?COLORS.highlight:color,rot});
  // body shell, chassis, glass and cabin
- add('body','box',[0,1.08,0],[4.35,.48,1.65],COLORS.body);
- add('body','box',[-.15,1.68,0],[2.2,.72,1.48],COLORS.body,[0,0,-.08]);
- add('body','box',[-.15,2.05,0],[1.75,.48,1.36],COLORS.glass,[0,0,-.08]);
- add('body','box',[1.48,1.45,0],[1.0,.35,1.45],COLORS.body);
- add('body','box',[-1.75,1.4,0],[.8,.3,1.45],COLORS.body);
+ add('body','box',[0,.83,0],[4.35,.13,1.58],COLORS.body);
+ add('body','box',[0,1.12,-1.5],[4.25,.32,.12],COLORS.body);
+ add('body','box',[0,1.12,1.5],[4.25,.32,.12],COLORS.body);
+ add('body','box',[-.15,1.68,0],[2.2,.72,1.38],COLORS.body,[0,0,-.08]);
+ add('body','box',[-.15,2.05,0],[1.75,.48,1.26],COLORS.glass,[0,0,-.08]);
+ add('body','box',[1.48,1.45,0],[.48,.28,1.35],COLORS.body);
+ add('body','box',[-1.75,1.4,0],[.45,.24,1.35],COLORS.body);
  // wheels, axles and hubs
  for(const x of [-2.75,2.72])for(const z of [-1.55,1.55]){add('wheels','cylinder',[x,.72,z],[.68,.24,.68],COLORS.rubber,[Math.PI/2,0,spin]);add('wheels','cylinder',[x,.72,z*1.012],[.36,.25,.36],COLORS.metal,[Math.PI/2,0,spin]);}
  add('crank','cylinder',[1.5,.95,0],[.28,.82,.28],COLORS.metal,[Math.PI/2,0,spin]);
@@ -67,7 +69,8 @@ function makeObjects(t,phase,selected){
 }
 
 function ThreeDStartScene({phase,selected,onSelect}){
- const canvasRef=useRef(null), stateRef=useRef({yaw:.72,pitch:.42,distance:9,drag:false,x:0,y:0});
+ const canvasRef=useRef(null), stateRef=useRef({yaw:.72,pitch:.42,distance:9,drag:false,x:0,y:0}), phaseRef=useRef(phase), selectedRef=useRef(selected);
+ phaseRef.current=phase;selectedRef.current=selected;
  useEffect(()=>{
   const canvas=canvasRef.current;if(!canvas)return;
   const gl=canvas.getContext('webgl',{alpha:false,antialias:false,powerPreference:'low-power'});
@@ -82,7 +85,7 @@ function ThreeDStartScene({phase,selected,onSelect}){
   let raf=0,start=performance.now(),lastW=0,lastH=0;
   const render=now=>{const w=Math.max(1,canvas.clientWidth),h=Math.max(1,canvas.clientHeight);if(w!==lastW||h!==lastH){lastW=w;lastH=h;canvas.width=Math.round(w*Math.min(devicePixelRatio||1,1.5));canvas.height=Math.round(h*Math.min(devicePixelRatio||1,1.5));gl.viewport(0,0,canvas.width,canvas.height);}
    gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);const s=stateRef.current,eye=[Math.sin(s.yaw)*s.distance*Math.cos(s.pitch),3+Math.sin(s.pitch)*s.distance*.55,Math.cos(s.yaw)*s.distance*Math.cos(s.pitch)];const vp=matMul(perspective(.72,canvas.width/canvas.height,.1,80),lookAt(eye,[0,1.15,0]));
-   const objects=makeObjects((now-start)/1000,phase,selected);
+   const objects=makeObjects((now-start)/1000,phaseRef.current,selectedRef.current);
    objects.forEach(o=>{const b=buffers[o.shape];gl.bindBuffer(gl.ARRAY_BUFFER,b.buffer);gl.enableVertexAttribArray(posLoc);gl.vertexAttribPointer(posLoc,3,gl.FLOAT,false,0,0);gl.uniformMatrix4fv(mvpLoc,false,matMul(vp,modelMatrix(o.pos,o.rot,o.scale)));gl.uniform3fv(colorLoc,o.color);gl.drawArrays(gl.TRIANGLES,0,b.count);});
    raf=requestAnimationFrame(render);
   };
@@ -93,7 +96,7 @@ function ThreeDStartScene({phase,selected,onSelect}){
   const wheel=e=>{e.preventDefault();stateRef.current.distance=Math.max(6,Math.min(15,stateRef.current.distance+e.deltaY*.008));};
   canvas.addEventListener('pointerdown',pointerDown);canvas.addEventListener('pointermove',pointerMove);canvas.addEventListener('pointerup',pointerUp);canvas.addEventListener('pointercancel',pointerUp);canvas.addEventListener('wheel',wheel,{passive:false});
   return()=>{cancelAnimationFrame(raf);canvas.removeEventListener('pointerdown',pointerDown);canvas.removeEventListener('pointermove',pointerMove);canvas.removeEventListener('pointerup',pointerUp);canvas.removeEventListener('pointercancel',pointerUp);canvas.removeEventListener('wheel',wheel);Object.values(buffers).forEach(b=>gl.deleteBuffer(b.buffer));gl.deleteProgram(program);};
- },[phase,selected]);
+ },[]);
  return <div className="sim-3d-stage"><canvas ref={canvasRef} aria-label="Interactive 3D animated cutaway vehicle. Drag to rotate and use the wheel or pinch to zoom."/><div className="sim-3d-badge">REAL-TIME 3D · DRAG TO ROTATE</div><div className="sim-3d-hint">Schematic 3D teaching model · select a system below to highlight it</div><div className="sim-3d-part-picks">{order.map(id=><button type="button" key={id} className={selected===id?'active':''} onClick={()=>onSelect(id)}>{components[id].name}</button>)}</div></div>;
 }
 
