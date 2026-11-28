@@ -81,7 +81,7 @@ function ThreeDStartScene({phase,selected,onSelect}){
   const program=gl.createProgram();gl.attachShader(program,compile(gl.VERTEX_SHADER,vs));gl.attachShader(program,compile(gl.FRAGMENT_SHADER,fs));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))return;
   gl.useProgram(program);const posLoc=gl.getAttribLocation(program,'aPosition'),mvpLoc=gl.getUniformLocation(program,'uMVP'),colorLoc=gl.getUniformLocation(program,'uColor');
   const buffers={};Object.entries(MESH).forEach(([name,data])=>{const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.STATIC_DRAW);buffers[name]={buffer:b,count:data.length/3};});
-  gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.clearColor(.035,.065,.105,1);
+  gl.enable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.clearColor(.035,.065,.105,1);
   let raf=0,start=performance.now(),lastW=0,lastH=0;
   const render=now=>{const w=Math.max(1,canvas.clientWidth),h=Math.max(1,canvas.clientHeight);if(w!==lastW||h!==lastH){lastW=w;lastH=h;canvas.width=Math.round(w*Math.min(devicePixelRatio||1,1.5));canvas.height=Math.round(h*Math.min(devicePixelRatio||1,1.5));gl.viewport(0,0,canvas.width,canvas.height);}
    gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);const s=stateRef.current,eye=[Math.sin(s.yaw)*s.distance*Math.cos(s.pitch),3+Math.sin(s.pitch)*s.distance*.55,Math.cos(s.yaw)*s.distance*Math.cos(s.pitch)];const vp=matMul(perspective(.72,canvas.width/canvas.height,.1,80),lookAt(eye,[0,1.15,0]));
