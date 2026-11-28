@@ -10,12 +10,12 @@ A lightweight, installable, mobile-first automobile engineering learning app.
 
 ## Architecture
 - `index.html`: application shell and metadata
-- `src/styles.css`: responsive design system and layouts
-- `src/app.js`: interface behaviour, navigation, learning interactions
+- `src/index.css`: styles and layouts
+- `src/App.jsx`: pages and navigation; `src/ModelViewer.jsx`: 3D viewer; `src/models.js`: which Sketchfab model each view and part uses
 - `src/data.js`: component and vehicle-system learning content
 - `public/`: PWA manifest, icon and offline service worker
 
 ## Learning data
-Component location and fitment can vary by Sportage engine, drivetrain and market. Confirm the vehicle VIN and engine code before applying workshop procedures. The schematic viewer is an interactive learning schematic, not a dimensionally accurate 3D model.
+Component location and fitment can vary by Sportage engine, drivetrain and market. Confirm the vehicle VIN and engine code before applying workshop procedures. 3D models are embedded from Sketchfab, need internet, and are credited to their authors in the viewer.
 
 Progress is stored locally in the browser on the learner's device. No account or remote database is required.
