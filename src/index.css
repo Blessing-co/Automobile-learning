@@ -101,3 +101,76 @@
 .viewer-data-controls label{display:flex;align-items:center;gap:7px;white-space:nowrap}
 .viewer-data-controls select{max-width:125px;padding:6px 8px;border:1px solid #65778c;border-radius:7px;background:#20334a;color:#fff;font-size:10px}
 @media(max-width:700px){.viewer-quality{grid-template-columns:1fr}.viewer-quality button{padding:8px 10px}.viewer-quality button small{font-size:10px}.viewer-data-controls label{width:100%;justify-content:space-between}.viewer-data-controls select{max-width:none;flex:1}}
+
+
+/* Whole-vehicle start-up animation studio */
+.start-sim{display:grid;gap:14px;margin:18px 0}
+.start-sim-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.start-sim-heading h2{font-size:21px;margin:7px 0}
+.start-sim-heading p{max-width:720px;font-size:13px;line-height:1.65;color:#64748b;margin:0}
+.sim-tag{white-space:nowrap;border-radius:20px;background:#edf4fb;color:#3c6286;padding:7px 10px;font-size:10px;font-weight:700}
+.sim-phase-strip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.sim-phase-strip button{display:flex;align-items:center;gap:7px;min-width:0;padding:10px 8px;border:1px solid #dce5ef;border-radius:10px;background:#fff;color:#63748a;text-align:left;cursor:pointer}
+.sim-phase-strip button span{display:grid;place-items:center;flex:0 0 24px;height:24px;border-radius:50%;background:#edf2f7;font-size:11px;font-weight:800}
+.sim-phase-strip button b{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sim-phase-strip button.active{border-color:#77a9df;background:#edf5ff;color:#1559a8}
+.sim-phase-strip button.active span{background:#1769e0;color:#fff}
+.car-cutaway{position:relative;overflow:hidden;border:1px solid #2d4258;border-radius:15px;background:radial-gradient(ellipse at 50% 40%,#253d56,#111d2b 76%);padding:15px 12px 10px}
+.car-cutaway svg{display:block;width:100%;height:auto;min-height:230px}
+.sim-status{display:flex;align-items:center;gap:8px;color:#edf5fc;padding:2px 5px 8px}
+.sim-status b{font-size:12px}.sim-status small{margin-left:auto;color:#9eb3c9;font-size:9px;letter-spacing:.8px}
+.sim-status>span{width:9px;height:9px;border-radius:50%;background:#78899b}
+.sim-status .working-dot{background:#e7b75b;box-shadow:0 0 12px #e7b75b99}
+.sim-status .running-dot{background:#4ade9b;box-shadow:0 0 14px #4ade9bcc}
+.sim-status .off-dot{background:#7b8795}
+.car-body{filter:drop-shadow(0 8px 12px #0005)}
+.car-cutaway .svg-label{font:700 11px system-ui;letter-spacing:.5px;fill:#e6eef7;pointer-events:none}
+.car-cutaway .svg-foot{font:600 9px system-ui;letter-spacing:.7px;fill:#9fb2c7}
+.car-cutaway .sim-part{cursor:pointer;outline:none}
+.car-cutaway .sim-part:focus .svg-label,.car-cutaway .sim-part.part-selected .svg-label{fill:#ffe29b}
+.car-cutaway .sim-part.part-selected{filter:drop-shadow(0 0 6px #f9d477)}
+.car-cutaway .sim-part:focus{outline:none}
+.power-flow,.signal-flow,.fuel-flow,.oil-flow,.coolant-flow,.exhaust-flow{fill:none;stroke-width:4;stroke-linecap:round;stroke-dasharray:8 9;opacity:.12}
+.power-flow{stroke:#7bc3ff}.signal-flow{stroke:#a78bfa}.fuel-flow{stroke:#e6ae55}.oil-flow,.coolant-flow{stroke:#f0c65e}.exhaust-flow{stroke:#d1d9e2}
+.flow-on{opacity:1;animation:sim-flow 1s linear infinite}
+.belt-path{fill:none;stroke:#e2c17e;stroke-width:5;stroke-dasharray:7 5;opacity:.25}
+.belt-on{opacity:1;animation:sim-flow .5s linear infinite}
+.engine-moving .piston-unit{animation:sim-piston .65s ease-in-out infinite alternate}
+.engine-moving .piston-two{animation-delay:-.32s}
+.engine-moving .crank-unit{transform-origin:386px 253px;animation:sim-crank .65s linear infinite}
+.phase-cranking .starter-part,.phase-firing .starter-part,.phase-idle .starter-part{filter:drop-shadow(0 0 5px #f2c879)}
+.phase-ignition .ecu-part,.phase-cranking .ecu-part,.phase-firing .ecu-part,.phase-idle .ecu-part{filter:drop-shadow(0 0 5px #9bc7ed)}
+.phase-firing .spark-flash,.phase-idle .spark-flash{animation:sim-spark .55s steps(2,end) infinite}
+.phase-idle .alternator-part{filter:drop-shadow(0 0 6px #7de1b0)}
+.phase-idle .wheel{opacity:.9}
+.phase-cranking .power-flow,.phase-ignition .power-flow{opacity:1}
+.phase-cranking .fuel-flow,.phase-firing .fuel-flow,.phase-idle .fuel-flow{opacity:1}
+.phase-firing .exhaust-flow,.phase-idle .exhaust-flow{opacity:1}
+.sim-key{display:flex;flex-wrap:wrap;gap:14px;padding:7px 5px 0;color:#aebfd0;font-size:9px}
+.sim-key span{display:flex;align-items:center;gap:5px}
+.sim-key i{width:17px;height:3px;border-radius:4px;display:inline-block}
+.key-electric{background:#7bc3ff}.key-fuel{background:#e6ae55}.key-oil{background:#f0c65e}.key-exhaust{background:#d1d9e2}
+.sim-controls{display:flex;flex-wrap:wrap;gap:8px}
+.sim-controls button:disabled{opacity:.4;cursor:not-allowed}
+.sim-explanation{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;padding:16px;border:1px solid #dce5ef;border-radius:12px;background:#fff}
+.sim-explanation h3{font-size:17px;margin:5px 0}
+.sim-explanation p{font-size:12px;line-height:1.65;color:#5f7084;margin:5px 0 0}
+.sim-active-list{padding:12px;border-radius:9px;background:#f3f7fb}
+.sim-active-list>b{font-size:11px;color:#3e5d7c}
+.sim-part-index .section-title{margin:8px 0}
+.sim-part-index .section-title h3{margin:0;font-size:16px}
+.sim-part-buttons{display:flex;flex-wrap:wrap;gap:7px}
+.sim-part-buttons button{padding:7px 10px;border:1px solid #dce5ef;border-radius:20px;background:#fff;color:#526176;font-size:10px;cursor:pointer}
+.sim-part-buttons button.selected{background:#eaf3ff;border-color:#8db8e9;color:#1559a8;font-weight:700}
+.sim-component-card{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px;padding:16px;border:1px solid #dce5ef;border-radius:12px;background:#fff}
+.sim-component-card>div{min-width:0}
+.sim-component-card h3{font-size:17px;margin:5px 0}
+.sim-component-card b{font-size:11px;color:#3e5d7c}
+.sim-component-card p{font-size:12px;line-height:1.6;color:#64748b;margin:4px 0 0}
+.sim-disclaimer{font-size:10px;line-height:1.65;color:#7b8999;margin:0}
+@keyframes sim-flow{to{stroke-dashoffset:-34}}
+@keyframes sim-piston{from{transform:translateY(-8px)}to{transform:translateY(8px)}}
+@keyframes sim-crank{to{transform:rotate(360deg)}}
+@keyframes sim-spark{0%,100%{opacity:.1}50%{opacity:1;filter:drop-shadow(0 0 7px #ffe26c)}}
+@media(max-width:760px){.start-sim-heading{flex-direction:column}.sim-tag{white-space:normal}.sim-phase-strip{grid-template-columns:repeat(5,minmax(74px,1fr));overflow-x:auto;padding-bottom:4px}.sim-phase-strip button{flex-direction:column;align-items:flex-start}.sim-phase-strip button b{font-size:10px}.car-cutaway{padding:12px 8px}.car-cutaway svg{width:760px;max-width:none}.car-cutaway{overflow-x:auto}.sim-explanation{grid-template-columns:1fr}.sim-component-card{grid-template-columns:1fr}.sim-controls button{flex:1 1 42%}.sim-status small{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.car-cutaway *, .car-cutaway *::before{animation:none!important;transition:none!important}}
