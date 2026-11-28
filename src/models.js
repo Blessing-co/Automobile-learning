@@ -30,5 +30,6 @@ export const partModels = {
 export const operationModels = {
  exploded: m('0a740cd20bfd4107a1e3c9fbcc5fe70b','Engine exploded view','rondinellisophia','Generic exploded engine model. Publisher listing identifies a CC Attribution licence; exact component fitment and internal geometry are not verified for Kia G4NA.'),
  running: m('e14ebe6d273d49a3becda6802270b4b0','Rigged 4-cylinder engine — animated','david.gnzlv','Rigged and animated generic four-cylinder combustion engine. Publisher lists CC Attribution. Demonstrates piston, connecting-rod and crankshaft motion; not an exact Sportage engine.'),
+ pistonMotion: m('ab725689aaf344ca91dc66878eb06da8','Animated engine piston','demagdev','Animated single-piston model showing piston movement during engine operation. Publisher lists CC Attribution; generic training asset, not Kia-specific.'),
  disassembled: m('ac94b606afca44e6b7fe3e537eb50f84','Four-cylinder piston and crankshaft assembly','moalshaboul','Generic six-part piston and crankshaft teaching assembly. Not a complete engine or Kia-specific part.')
 };
